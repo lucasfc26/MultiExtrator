@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>FacturaFlow — Autonomous Invoice Intelligence</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-tint": "#ffb690", "inverse-on-surface": "#312f36", "secondary": "#ffb95f", "surface-container-highest": "#35343b", "on-error-container": "#ffdad6", "surface-container": "#201f25", "tertiary-fixed": "#6ffbbe", "on-tertiary-fixed-variant": "#005236", "background": "#141319", "surface-container-low": "#1c1b21", "on-surface": "#e5e1ea", "on-surface-variant": "#e0c0b1", "primary": "#ffb690", "on-primary-fixed-variant": "#783200", "tertiary-container": "#00b07a", "primary-fixed-dim": "#ffb690", "on-error": "#690005", "error": "#ffb4ab", "secondary-fixed": "#ffddb8", "on-primary": "#552100", "on-tertiary-container": "#003b26", "on-secondary-fixed-variant": "#653e00", "error-container": "#93000a", "tertiary-fixed-dim": "#4edea3", "on-background": "#e5e1ea", "tertiary": "#4edea3", "primary-fixed": "#ffdbca", "on-primary-fixed": "#341100", "on-primary-container": "#582200", "outline": "#a78b7d", "on-secondary": "#472a00", "surface": "#141319", "on-secondary-fixed": "#2a1700", "on-tertiary-fixed": "#002113", "inverse-surface": "#e5e1ea", "on-secondary-container": "#5b3800", "primary-container": "#f97316", "surface-container-lowest": "#0e0d13", "surface-container-high": "#2b2930", "outline-variant": "#584237", "surface-dim": "#141319", "inverse-primary": "#9d4300", "surface-bright": "#3a383f", "secondary-container": "#ee9800", "secondary-fixed-dim": "#ffb95f", "on-tertiary": "#003824", "surface-variant": "#35343b" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "space-sm": "0.5rem", "space-md": "1rem", "gutter-sm": "1rem", "space-lg": "1.5rem", "margin-mobile": "1rem", "space-xs": "0.25rem", "space-xl": "2.5rem", "margin": "2rem", "gutter": "1.5rem", "gutter-lg": "2rem" }, "fontFamily": { "headline-lg": [ "Geist" ], "body-md": [ "Geist" ], "headline-md": [ "Geist" ], "display-xl": [ "Geist" ], "body-sm": [ "Geist" ], "title-sm": [ "Geist" ], "body-lg": [ "Geist" ], "badge-caps": [ "Geist" ], "label-code": [ "JetBrains Mono" ], "label-numeric": [ "JetBrains Mono" ], "headline-lg-mobile": [ "Geist" ], "display-xl-mobile": [ "Geist" ] }, "fontSize": { "headline-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.025em", "fontWeight": "600" } ], "body-md": [ "14px", { "lineHeight": "20px", "letterSpacing": "-0.005em", "fontWeight": "400" } ], "headline-md": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "500" } ], "display-xl": [ "56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "600" } ], "body-sm": [ "12px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" } ], "title-sm": [ "18px", { "lineHeight": "26px", "letterSpacing": "-0.015em", "fontWeight": "500" } ], "body-lg": [ "16px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "400" } ], "badge-caps": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" } ], "label-code": [ "12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "label-numeric": [ "13px", { "lineHeight": "18px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-lg-mobile": [ "26px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "display-xl-mobile": [ "36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "600" } ] } } } };</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)]"><div class="h-16 w-full px-gutter lg:px-gutter-lg flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-lg"><a class="flex items-center gap-space-sm" data-path="overview" href="#"><img alt="FacturaFlow Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Vxsx6oqi2z0DmzB7_zh0SRp5hFAlGD0Ob1ovbChmcqdMOHq_Vo-A1TPCJ_DqU_G1XQmEbE6pNZwqnmp8i-CF3o0OI_xn0_68ApHuloOaMD6M5s5SoF22JAxIO3bJBjFdXsNrAa28Z-RZqEEsRtXRt9MY9q63GKFBWAaoJ1D313bV_zWQXSUK-1PGD_INSZQ6__cvBpZyoMim25ft3TXol-QP1zMD8vaCzJsNBhLPyXNg"/><span class="font-headline-md text-headline-md tracking-tight text-on-surface font-semibold">Factura<span class="text-primary">Flow</span></span></a><nav class="hidden xl:flex items-center gap-space-sm" data-active-classes="bg-surface-container-high text-primary font-title-sm text-title-sm rounded-lg"><a aria-current="page" class="px-space-sm py-space-xs transition-colors bg-surface-container-high text-primary font-title-sm text-title-sm rounded-lg" data-path="overview" href="#">Visão Geral</a><a class="px-space-sm py-space-xs rounded-lg font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-path="dashboard" href="#">Dashboard</a><a class="px-space-sm py-space-xs rounded-lg font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-path="nova-extracao" href="#">Nova Extração</a><a class="px-space-sm py-space-xs rounded-lg font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-path="historico" href="#">Histórico</a><a class="px-space-sm py-space-xs rounded-lg font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-path="creditos" href="#">Créditos</a><a class="px-space-sm py-space-xs rounded-lg font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-path="api-docs" href="#">API / Devs</a></nav></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-surface-container-high"><span class="material-symbols-outlined text-[16px] text-tertiary">bolt</span><span class="font-label-numeric text-label-numeric text-on-surface">2.450</span><span class="font-badge-caps text-badge-caps text-on-surface-variant uppercase tracking-wider">créditos</span></div><button aria-label="Alternar Tema Claro/Escuro" class="h-8 w-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" onclick="document.documentElement.classList.toggle('dark')"><span class="material-symbols-outlined text-[18px] dark:hidden">dark_mode</span><span class="material-symbols-outlined text-[18px] hidden dark:inline-block">light_mode</span></button><button class="relative h-8 w-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-[18px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary-container ring-2 ring-surface-container-lowest"></span></button><a class="hidden md:inline-flex items-center gap-space-xs px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary-container font-headline-md text-body-md font-semibold shadow-[0_4px_14px_rgba(234,88,12,0.35)] hover:brightness-110 transition-all" data-path="nova-extracao" href="#"><span class="material-symbols-outlined text-[18px]">upload_file</span><span>Nova Extração</span></a><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></div></header><main class="w-full pt-16 bg-background min-h-[calc(100vh-280px)]"><div class="flex flex-col w-full">
+<!-- AMBIENT GLOW ANCHORS (Contained within wrapper) -->
+<div class="relative w-full overflow-hidden">
+<div class="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gradient-to-b from-primary-container/20 via-secondary/5 to-transparent blur-3xl opacity-70"></div>
+<div class="pointer-events-none absolute top-[700px] -left-48 w-[500px] h-[500px] bg-tertiary-container/10 blur-[140px]"></div>
+<div class="pointer-events-none absolute top-[1800px] -right-48 w-[600px] h-[600px] bg-primary-container/10 blur-[160px]"></div>
+<!-- 1. HERO SECTION -->
+<section class="relative w-full px-gutter lg:px-gutter-lg pt-space-xl pb-space-xl max-w-7xl mx-auto">
+<!-- Tag / Overline -->
+<div class="flex flex-wrap items-center justify-center gap-space-sm mb-space-md">
+<div class="inline-flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-high/90 shadow-sm">
+<span class="inline-block w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<span class="font-badge-caps text-badge-caps text-on-surface-variant uppercase tracking-wider">Motor Neural v2.4 • Pronto para Produção</span>
+</div>
+<div class="hidden sm:inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-surface-container">
+<span class="font-label-code text-label-code text-secondary">R$ 0,19 / fatura auditada</span>
+</div>
+</div>
+<!-- Mandatory Titles -->
+<div class="text-center max-w-4xl mx-auto space-y-space-md mb-space-xl">
+<h1 class="font-display-xl text-display-xl tracking-tight text-on-surface font-semibold">
+          Transforme faturas em <span class="bg-gradient-to-r from-primary via-secondary to-primary-container bg-clip-text text-transparent">dados estruturados.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
+          Extraia informações de faturas, acompanhe suas requisições e integre o processamento diretamente aos seus sistemas por meio de uma API.
+        </p>
+<!-- CTA Buttons -->
+<div class="pt-space-sm flex flex-col sm:flex-row items-center justify-center gap-space-md">
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-space-sm px-space-xl py-space-md rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-on-primary-container font-headline-md text-body-lg font-semibold shadow-lg hover:brightness-110 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+<span>Começar agora</span>
+</a>
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-space-sm px-space-xl py-space-md rounded-xl bg-surface-container-high/80 text-on-surface font-headline-md text-body-lg font-medium shadow-sm hover:bg-surface-bright transition-all" href="#dev-api">
+<span class="material-symbols-outlined text-[20px] text-primary">terminal</span>
+<span>Conhecer a API</span>
+</a>
+</div>
+<!-- Trust Badges -->
+<div class="pt-space-md flex flex-wrap items-center justify-center gap-space-lg text-on-surface-variant font-label-code text-label-code">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">verified_user</span>
+<span>Conformidade LGPD &amp; SOC 2</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">speed</span>
+<span>Latência média de 420ms</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[18px]">analytics</span>
+<span>99.4% Taxa de Reconhecimento</span>
+</div>
+</div>
+</div>
+<!-- INTERACTIVE DEMO STAGE (PDF -> SCANNER PULSE -> JSON/CSV) -->
+<div class="relative w-full rounded-xl bg-surface-container-lowest shadow-2xl p-space-sm md:p-space-md">
+<!-- Workbench Bar -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm px-space-md py-space-sm bg-surface-container-low rounded-lg mb-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="flex gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-error"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+</div>
+<span class="font-label-code text-label-code text-on-surface font-semibold pl-space-xs">pipeline_telemetry_console</span>
+<span class="hidden md:inline-block px-space-xs py-0.5 rounded bg-surface-container font-badge-caps text-badge-caps text-primary tracking-wider uppercase">INFERENCE ONLINE</span>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs font-label-code text-label-code text-on-surface-variant">
+<span>DOC_ID:</span>
+<span class="text-on-surface font-medium">FAT-2024-892.pdf</span>
+</div>
+<div class="hidden sm:flex items-center gap-space-xs font-label-code text-label-code text-tertiary bg-surface-container px-space-sm py-0.5 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>100% PARSED</span>
+</div>
+</div>
+</div>
+<!-- 3-Column Split Visualizer -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-stretch">
+<!-- LEFT: Realist Invoice Simulation (5 cols) -->
+<div class="lg:col-span-5 flex flex-col bg-surface-container rounded-lg p-space-lg shadow-inner relative overflow-hidden">
+<div class="flex items-start justify-between mb-space-md">
+<div>
+<span class="font-badge-caps text-badge-caps uppercase tracking-wider text-primary font-semibold">FATURA TELECOM &amp; DADOS</span>
+<h3 class="font-headline-md text-title-sm text-on-surface font-semibold">Lúmina Conectividade S.A.</h3>
+<p class="font-label-code text-label-code text-on-surface-variant">CNPJ: 14.829.102/0001-44</p>
+</div>
+<div class="text-right">
+<span class="inline-block px-space-sm py-0.5 rounded bg-surface-container-high font-label-numeric text-label-code text-on-surface font-semibold">#FAT-2024-892</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Emissão: 14/10/2024</p>
+</div>
+</div>
+<!-- Invoice Itemized Simulation -->
+<div class="bg-surface-container-lowest/80 rounded p-space-md mb-space-md space-y-space-xs">
+<div class="flex justify-between font-label-code text-label-code text-on-surface-variant pb-1">
+<span>DESCRIÇÃO</span>
+<span>TOTAL</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm text-on-surface">
+<span>Link IP Dedicado 1Gbps Simétrico</span>
+<span class="font-label-numeric text-label-numeric font-medium">R$ 11.200,00</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm text-on-surface">
+<span>SLA Avançado 99.9% 24x7</span>
+<span class="font-label-numeric text-label-numeric font-medium">R$ 1.850,00</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm text-on-surface">
+<span>Locação Roteador Core BGP</span>
+<span class="font-label-numeric text-label-numeric font-medium">R$ 1.800,20</span>
+</div>
+</div>
+<!-- Tax Highlights & Grand Total -->
+<div class="space-y-space-xs font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+<div class="flex justify-between">
+<span>Base de Cálculo ICMS:</span>
+<span class="font-label-numeric text-label-code text-on-surface">R$ 14.850,20</span>
+</div>
+<div class="flex justify-between">
+<span>Retenção PIS/COFINS/CSLL (4.65%):</span>
+<span class="font-label-numeric text-label-code text-on-surface">R$ 690,53</span>
+</div>
+<div class="flex justify-between">
+<span>ISSQN Retido (5.00%):</span>
+<span class="font-label-numeric text-label-code text-on-surface">R$ 742,51</span>
+</div>
+</div>
+<div class="mt-auto pt-space-sm bg-surface-container-high/60 rounded-lg p-space-md flex items-center justify-between">
+<div>
+<p class="font-badge-caps text-badge-caps text-on-surface-variant uppercase tracking-wider">VALOR TOTAL LÍQUIDO</p>
+<p class="font-display-xl-mobile text-headline-lg font-semibold text-secondary font-label-numeric">R$ 14.850,20</p>
+</div>
+<span class="material-symbols-outlined text-[32px] text-tertiary">task_alt</span>
+</div>
+<!-- Visual Scanning Laser Animation -->
+<div class="pointer-events-none absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary-container to-transparent shadow-[0_0_12px_#f97316] animate-pulse top-1/2"></div>
+</div>
+<!-- CENTER: Pipeline & AI Extraction Logic (2 cols) -->
+<div class="lg:col-span-2 flex flex-col items-center justify-center py-space-md px-space-xs space-y-space-md bg-surface-container-low rounded-lg text-center">
+<div class="w-12 h-12 rounded-xl bg-primary-container/20 flex items-center justify-center text-primary shadow-inner">
+<span class="material-symbols-outlined text-[26px]">psychology</span>
+</div>
+<div class="space-y-1">
+<span class="font-badge-caps text-badge-caps text-primary uppercase tracking-widest font-semibold">OCR Neural</span>
+<p class="font-label-code text-label-code text-on-surface">Língua: pt-BR</p>
+<p class="font-label-code text-label-code text-tertiary">CONF: 99.82%</p>
+</div>
+<!-- Pulse Vector Node -->
+<div class="flex flex-col items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-ping"></span>
+<div class="w-0.5 h-10 bg-gradient-to-b from-primary-container via-tertiary to-transparent"></div>
+<span class="material-symbols-outlined text-secondary text-[20px]">arrow_forward</span>
+</div>
+<div class="w-full px-space-sm space-y-space-xs font-label-code text-label-code">
+<div class="p-1.5 rounded bg-surface-container text-on-surface text-left flex items-center justify-between">
+<span>Layout</span>
+<span class="text-tertiary font-bold">MATCH</span>
+</div>
+<div class="p-1.5 rounded bg-surface-container text-on-surface text-left flex items-center justify-between">
+<span>Tributos</span>
+<span class="text-tertiary font-bold">VALID</span>
+</div>
+<div class="p-1.5 rounded bg-surface-container text-on-surface text-left flex items-center justify-between">
+<span>Latência</span>
+<span class="text-secondary font-bold">398ms</span>
+</div>
+</div>
+</div>
+<!-- RIGHT: Parsed JSON Syntax Tree + Export Options (5 cols) -->
+<div class="lg:col-span-5 flex flex-col bg-surface-container-lowest rounded-lg p-space-md shadow-inner">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">data_object</span>
+<span class="font-label-code text-label-code text-on-surface font-semibold">output_payload.json</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1 rounded bg-surface-container-high text-on-surface font-label-code text-label-code hover:bg-surface-bright flex items-center gap-1 transition-colors" id="copy-hero-json" onclick="navigator.clipboard.writeText(document.getElementById('hero-json-content').innerText); this.innerHTML='&lt;span class=\'material-symbols-outlined text-[14px]\'&gt;check&lt;/span&gt; Copiado!'; setTimeout(() =&gt; this.innerHTML='&lt;span class=\'material-symbols-outlined text-[14px]\'&gt;content_copy&lt;/span&gt; Copiar JSON', 2000);">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span>Copiar JSON</span>
+</button>
+<button class="px-space-sm py-1 rounded bg-surface-container-high text-primary font-label-code text-label-code hover:bg-surface-bright flex items-center gap-1 transition-colors" onclick="alert('Exportando fatura FAT-2024-892 em formato RFC 4180 CSV...');">
+<span class="material-symbols-outlined text-[14px]">file_download</span>
+<span>Baixar CSV</span>
+</button>
+</div>
+</div>
+<!-- Code block -->
+<pre class="flex-1 overflow-x-auto p-space-sm bg-surface-container-lowest rounded font-label-code text-label-code text-on-surface space-y-0.5 leading-relaxed selection:bg-primary-container" id="hero-json-content"><code>{
+  <span class="text-primary">"status"</span>: <span class="text-tertiary">"extracted_and_verified"</span>,
+  <span class="text-primary">"invoice_number"</span>: <span class="text-secondary">"FAT-2024-892"</span>,
+  <span class="text-primary">"issuer"</span>: {
+    <span class="text-primary">"legal_name"</span>: <span class="text-on-surface-variant">"Lúmina Conectividade S.A."</span>,
+    <span class="text-primary">"tax_id"</span>: <span class="text-secondary">"14829102000144"</span>,
+    <span class="text-primary">"country"</span>: <span class="text-on-surface-variant">"BRA"</span>
+  },
+  <span class="text-primary">"dates"</span>: {
+    <span class="text-primary">"issued"</span>: <span class="text-on-surface-variant">"2024-10-14"</span>,
+    <span class="text-primary">"due_date"</span>: <span class="text-on-surface-variant">"2024-10-28"</span>
+  },
+  <span class="text-primary">"financials"</span>: {
+    <span class="text-primary">"currency"</span>: <span class="text-on-surface-variant">"BRL"</span>,
+    <span class="text-primary">"gross_amount"</span>: <span class="text-primary-container">14850.20</span>,
+    <span class="text-primary">"taxes"</span>: {
+      <span class="text-primary">"retention_pis_cofins"</span>: <span class="text-primary-container">690.53</span>,
+      <span class="text-primary">"issqn"</span>: <span class="text-primary-container">742.51</span>
+    },
+    <span class="text-primary">"net_payable"</span>: <span class="text-primary-container">14850.20</span>
+  },
+  <span class="text-primary">"audit_confidence"</span>: <span class="text-tertiary">0.9982</span>
+}</code></pre>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. FUNCIONALIDADES ESSENCIAIS (Grid Glassmorphism) -->
+<section class="relative w-full px-gutter lg:px-gutter-lg py-space-xl max-w-7xl mx-auto">
+<div class="text-center max-w-3xl mx-auto mb-space-xl space-y-space-xs">
+<span class="font-badge-caps text-badge-caps text-primary uppercase tracking-widest font-semibold">Infraestrutura Soberana</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">
+          Potência fiscal construída para volume sem fricção
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Arquitetura desenhada para times de finanças, engenharia de software e compliance corporativo.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+<!-- Card 1 -->
+<div class="bg-surface-container-low/70 backdrop-blur-xl rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all group">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary mb-space-md group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[26px]">precision_manufacturing</span>
+</div>
+<span class="font-badge-caps text-badge-caps text-tertiary uppercase tracking-wider font-semibold">99.4% Taxa de Acerto</span>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold mt-1 mb-space-xs">Extração Automatizada com IA</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Reconhecimento semântico treinado em milhares de modelos municipais, concessionárias e NFe brasileiras sem necessidade de parametrização manual de templates.
+          </p>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-low/70 backdrop-blur-xl rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all group">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-secondary mb-space-md group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[26px]">dataset</span>
+</div>
+<span class="font-badge-caps text-badge-caps text-secondary uppercase tracking-wider font-semibold">JSON + CSV Instantâneos</span>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold mt-1 mb-space-xs">Conversão e Normalização Fiscal</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Receba campos padronizados prontos para integração no ERP: deduções fiscais, data de vencimento, código de barras e chave de acesso validados.
+          </p>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-low/70 backdrop-blur-xl rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all group">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary-container mb-space-md group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[26px]">flash_on</span>
+</div>
+<span class="font-badge-caps text-badge-caps text-primary uppercase tracking-wider font-semibold">&lt; 1.2s Latência Média</span>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold mt-1 mb-space-xs">API REST Ultrarrápida</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Endpoints escaláveis com capacidade de processamento concorrente massivo. Tempo de resposta otimizado em servidores locais com borda edge.
+          </p>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-low/70 backdrop-blur-xl rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all group">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-tertiary mb-space-md group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[26px]">compare</span>
+</div>
+<span class="font-badge-caps text-badge-caps text-on-surface-variant uppercase tracking-wider font-semibold">Auditoria Completa</span>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold mt-1 mb-space-xs">Histórico e Comparação Lado a Lado</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Visualize o arquivo original confrontado com a camada de OCR com caixas delimitadoras interativas para resolução célere de eventuais inconsistências.
+          </p>
+</div>
+<!-- Card 5 -->
+<div class="bg-surface-container-low/70 backdrop-blur-xl rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all group">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-secondary mb-space-md group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[26px]">account_balance_wallet</span>
+</div>
+<span class="font-badge-caps text-badge-caps text-secondary uppercase tracking-wider font-semibold">Sem Mensalidades Fixas</span>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold mt-1 mb-space-xs">Gestão Inteligente de Créditos</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Modelo pré-pago sem expiração de créditos ativos. Pague exatamente pelo volume auditado com recarga instantânea via PIX ou Cartão corporativo.
+          </p>
+</div>
+<!-- Card 6 -->
+<div class="bg-surface-container-low/70 backdrop-blur-xl rounded-xl p-space-lg shadow-sm hover:shadow-md transition-all group">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary mb-space-md group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[26px]">webhook</span>
+</div>
+<span class="font-badge-caps text-badge-caps text-primary uppercase tracking-wider font-semibold">Automação Contínua</span>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold mt-1 mb-space-xs">Webhooks e SDKs Oficiais</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Dispare eventos assíncronos ao término de cada extração com garantia de entrega e bibliotecas prontas para Python, Node.js e Go.
+          </p>
+</div>
+</div>
+</section>
+<!-- 3. COMO FUNCIONA (Fluxo em 4 Passos) -->
+<section class="relative w-full px-gutter lg:px-gutter-lg py-space-xl bg-surface-container-lowest/60">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-space-xl gap-space-md">
+<div>
+<span class="font-badge-caps text-badge-caps text-secondary uppercase tracking-widest font-semibold">Workflow Simplificado</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold mt-1">
+              Da fatura bruta ao banco de dados em quatro etapas
+            </h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+            Fluxo projetado para operação autônoma sem necessidade de treinamentos manuais ou parametrizações lentas.
+          </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md relative">
+<!-- Step 1 -->
+<div class="bg-surface-container rounded-xl p-space-lg shadow-sm relative flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<span class="font-label-numeric text-headline-md font-semibold text-primary">01</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[24px]">person_add</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold mb-space-xs">Crie sua conta</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Cadastre-se em 30 segundos. Receba chave de API de teste e créditos cortesia imediatos para validar suas faturas de amostra.
+              </p>
+</div>
+<div class="pt-space-md mt-space-md">
+<span class="font-label-code text-label-code text-tertiary">Tempo: ~30 segundos</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-container rounded-xl p-space-lg shadow-sm relative flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<span class="font-label-numeric text-headline-md font-semibold text-secondary">02</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[24px]">credit_card</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold mb-space-xs">Adicione créditos</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Selecione o pacote ideal e recarregue instantaneamente por PIX com compensação em 3 segundos ou no Cartão corporativo.
+              </p>
+</div>
+<div class="pt-space-md mt-space-md">
+<span class="font-label-code text-label-code text-secondary">Sem fidelidade</span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface-container rounded-xl p-space-lg shadow-sm relative flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<span class="font-label-numeric text-headline-md font-semibold text-primary-container">03</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[24px]">upload_file</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold mb-space-xs">Envie suas faturas</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Faça o envio de centenas de arquivos arrastando para o painel ou integre sua esteira disparando uploads via API REST.
+              </p>
+</div>
+<div class="pt-space-md mt-space-md">
+<span class="font-label-code text-label-code text-primary">PDF, PNG, JPEG, TIFF</span>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="bg-surface-container rounded-xl p-space-lg shadow-sm relative flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<span class="font-label-numeric text-headline-md font-semibold text-tertiary">04</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[24px]">sync_alt</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold mb-space-xs">Consulte e exporte</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Receba JSON estruturado, valide campos fiscais lado a lado ou baixe consolidados em planilhas CSV prontas para conciliação.
+              </p>
+</div>
+<div class="pt-space-md mt-space-md">
+<span class="font-label-code text-label-code text-tertiary">Automação total</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. SEÇÃO DE DESENVOLVEDORES (API & CODE SNIPPET) -->
+<section class="relative w-full px-gutter lg:px-gutter-lg py-space-xl max-w-7xl mx-auto" id="dev-api">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-center">
+<!-- Text intro (5 cols) -->
+<div class="lg:col-span-5 space-y-space-md">
+<div class="inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded bg-surface-container-high">
+<span class="material-symbols-outlined text-[16px] text-primary">code</span>
+<span class="font-label-code text-label-code text-primary">DEV_FIRST ARCHITECTURE</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">
+            Integrado em minutos. Projetado para engenharia de precisão.
+          </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Nossa API aceita arquivos binários via <code class="text-primary font-label-code bg-surface-container px-1 py-0.5 rounded">multipart/form-data</code> e retorna objetos JSON estritamente tipados com auditoria por campo e cálculo de retenções.
+          </p>
+<ul class="space-y-space-sm font-body-sm text-body-sm text-on-surface">
+<li class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check_circle</span>
+<span>Autenticação Bearer simplificada com rotação de chaves</span>
+</li>
+<li class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check_circle</span>
+<span>Webhooks assinados criptograficamente com HMAC SHA-256</span>
+</li>
+<li class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check_circle</span>
+<span>Rate limit inicial de 300 requisições por minuto</span>
+</li>
+</ul>
+<div class="pt-space-xs">
+<a class="inline-flex items-center gap-space-xs text-primary font-label-code text-label-code hover:underline" href="#">
+<span>Acessar referência completa do Swagger OpenAPI v3</span>
+<span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+</a>
+</div>
+</div>
+<!-- Interactive Code Workspace (7 cols) -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden">
+<!-- Code Tabs Bar -->
+<div class="flex items-center justify-between bg-surface-container-low px-space-md py-space-xs">
+<div class="flex items-center gap-space-xs" id="code-tabs">
+<button class="px-space-sm py-1.5 rounded font-label-code text-label-code text-primary bg-surface-container font-semibold transition-colors" id="tab-btn-ts" onclick="switchTab('ts')">
+                TypeScript / Node
+              </button>
+<button class="px-space-sm py-1.5 rounded font-label-code text-label-code text-on-surface-variant hover:text-on-surface transition-colors" id="tab-btn-py" onclick="switchTab('py')">
+                Python
+              </button>
+<button class="px-space-sm py-1.5 rounded font-label-code text-label-code text-on-surface-variant hover:text-on-surface transition-colors" id="tab-btn-curl" onclick="switchTab('curl')">
+                cURL
+              </button>
+</div>
+<button class="flex items-center gap-1 font-label-code text-label-code text-on-surface-variant hover:text-on-surface bg-surface-container px-space-sm py-1 rounded transition-colors" id="copy-code-btn" onclick="copyCurrentCode()">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+<span id="copy-feedback-label">Copiar</span>
+</button>
+</div>
+<!-- Snippet 1: TypeScript -->
+<pre class="p-space-md overflow-x-auto font-label-code text-label-code leading-relaxed text-on-surface" id="code-ts"><code class="block"><span class="text-on-surface-variant">// 1. Import SDK and client</span>
+<span class="text-secondary">import</span> { FacturaFlowClient } <span class="text-secondary">from</span> <span class="text-tertiary">'@facturaflow/sdk'</span>;
+<span class="text-secondary">import</span> fs <span class="text-secondary">from</span> <span class="text-tertiary">'fs'</span>;
+
+<span class="text-secondary">const</span> client = <span class="text-secondary">new</span> FacturaFlowClient({
+  apiKey: process.env.<span class="text-primary">FACTURAFLOW_API_KEY</span>!,
+});
+
+<span class="text-secondary">async function</span> <span class="text-primary">processInvoice</span>() {
+  <span class="text-secondary">const</span> fileStream = fs.createReadStream(<span class="text-tertiary">'./fatura-telecom.pdf'</span>);
+
+  <span class="text-on-surface-variant">// Synchronous inference under ~400ms</span>
+  <span class="text-secondary">const</span> result = <span class="text-secondary">await</span> client.invoices.extract({
+    file: fileStream,
+    autoValidateTaxes: <span class="text-primary-container">true</span>,
+    outputFormat: <span class="text-tertiary">'json_normalized'</span>,
+  });
+
+  console.log(<span class="text-tertiary">`Fatura Processada: ${result.invoiceNumber}`</span>);
+  console.log(<span class="text-tertiary">`Total Líquido: R$ ${result.financials.netPayable}`</span>);
+  console.log(<span class="text-tertiary">`Score de Auditoria: ${result.auditConfidence * 100}%`</span>);
+}</code></pre>
+<!-- Snippet 2: Python (Hidden by default) -->
+<pre class="hidden p-space-md overflow-x-auto font-label-code text-label-code leading-relaxed text-on-surface" id="code-py"><code class="block"><span class="text-secondary">import</span> os
+<span class="text-secondary">import</span> requests
+
+api_key = os.getenv(<span class="text-primary">"FACTURAFLOW_API_KEY"</span>)
+url = <span class="text-tertiary">"https://api.facturaflow.io/v1/invoices/extract"</span>
+
+headers = {
+    <span class="text-tertiary">"Authorization"</span>: <span class="text-tertiary">f"Bearer {api_key}"</span>
+}
+
+files = {
+    <span class="text-tertiary">"file"</span>: open(<span class="text-tertiary">"fatura-telecom.pdf"</span>, <span class="text-tertiary">"rb"</span>)
+}
+
+data = {
+    <span class="text-tertiary">"auto_validate_taxes"</span>: <span class="text-primary-container">"true"</span>,
+    <span class="text-tertiary">"output_format"</span>: <span class="text-tertiary">"json_normalized"</span>
+}
+
+response = requests.post(url, headers=headers, files=files, data=data)
+result = response.json()
+
+print(f<span class="text-tertiary">"Fatura: {result['invoice_number']} | Valor: R$ {result['financials']['net_payable']}"</span>)</code></pre>
+<!-- Snippet 3: cURL (Hidden by default) -->
+<pre class="hidden p-space-md overflow-x-auto font-label-code text-label-code leading-relaxed text-on-surface" id="code-curl"><code class="block">curl -X POST https://api.facturaflow.io/v1/invoices/extract \
+  -H <span class="text-tertiary">"Authorization: Bearer sec_live_99d14fc82aa01"</span> \
+  -F <span class="text-tertiary">"file=@./fatura-telecom.pdf"</span> \
+  -F <span class="text-tertiary">"auto_validate_taxes=true"</span> \
+  -F <span class="text-tertiary">"output_format=json_normalized"</span></code></pre>
+</div>
+</div>
+</section>
+<!-- 5. PLANOS DE CRÉDITOS & PRICING TRANSPARENTE -->
+<section class="relative w-full px-gutter lg:px-gutter-lg py-space-xl bg-surface-container-lowest/50">
+<div class="max-w-7xl mx-auto">
+<div class="text-center max-w-2xl mx-auto mb-space-xl space-y-space-xs">
+<span class="font-badge-caps text-badge-caps text-primary uppercase tracking-widest font-semibold">Preços Claros &amp; Sob Demanda</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">
+            Sem mensalidades compulsórias. Seus créditos nunca expiram.
+          </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Adquira pacotes com base na sua demanda real e acumule créditos não utilizados para os próximos meses.
+          </p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-lg items-stretch">
+<!-- Starter -->
+<div class="bg-surface-container rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-badge-caps text-badge-caps text-on-surface-variant uppercase tracking-wider font-semibold">Plano Starter</span>
+<span class="px-space-sm py-0.5 rounded bg-surface-container-high font-label-code text-label-code text-on-surface">Testes &amp; Pilotos</span>
+</div>
+<div class="flex items-baseline gap-1 my-space-md">
+<span class="font-label-numeric text-headline-md font-normal text-on-surface-variant">R$</span>
+<span class="font-label-numeric text-display-xl font-semibold text-on-surface">89</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/recarga</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+                Perfeito para validação de produto, desenvolvedores e pequenos negócios com baixo fluxo mensal de faturas.
+              </p>
+<div class="p-space-sm bg-surface-container-low rounded-lg mb-space-md">
+<div class="flex items-center justify-between font-label-code text-label-code text-on-surface">
+<span>Volume:</span>
+<span class="font-bold text-primary">250 créditos</span>
+</div>
+<div class="flex items-center justify-between font-label-code text-label-code text-on-surface-variant mt-1">
+<span>Custo por fatura:</span>
+<span class="font-label-numeric">R$ 0,35 / doc</span>
+</div>
+</div>
+<ul class="space-y-space-sm font-body-sm text-body-sm text-on-surface">
+<li class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check</span>
+<span>Extração completa JSON &amp; CSV</span>
+</li>
+<li class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check</span>
+<span>Acesso à API REST v1 e v2</span>
+</li>
+<li class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check</span>
+<span>Retenção de histórico por 30 dias</span>
+</li>
+</ul>
+</div>
+<div class="pt-space-lg">
+<a class="w-full inline-flex items-center justify-center py-space-sm px-space-md rounded-lg bg-surface-container-high text-on-surface font-headline-md text-body-md font-semibold hover:bg-surface-bright transition-colors" href="#">
+                Comprar 250 Créditos
+              </a>
+</div>
+</div>
+<!-- Pro (Most Popular) with Orange Glow -->
+<div class="relative bg-surface-container-high rounded-xl p-space-lg shadow-xl flex flex-col justify-between -mt-2 lg:-mt-4">
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 px-space-md py-0.5 rounded-full bg-gradient-to-r from-primary-container to-secondary text-on-primary-container font-badge-caps text-badge-caps uppercase tracking-wider font-semibold shadow-md">
+              MAIS POPULAR
+            </div>
+<div>
+<div class="flex items-center justify-between mb-space-sm pt-space-xs">
+<span class="font-badge-caps text-badge-caps text-primary uppercase tracking-wider font-semibold">Plano Pro</span>
+<span class="px-space-sm py-0.5 rounded bg-primary-container/20 font-label-code text-label-code text-primary font-semibold">Equipes Ágeis</span>
+</div>
+<div class="flex items-baseline gap-1 my-space-md">
+<span class="font-label-numeric text-headline-md font-normal text-on-surface-variant">R$</span>
+<span class="font-label-numeric text-display-xl font-semibold text-secondary">380</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/recarga</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+                Ideal para departamentos fiscais e contabilidades com fluxo diário de conciliações e pagamentos.
+              </p>
+<div class="p-space-sm bg-surface-container rounded-lg mb-space-md">
+<div class="flex items-center justify-between font-label-code text-label-code text-on-surface">
+<span>Volume:</span>
+<span class="font-bold text-secondary">1.500 créditos</span>
+</div>
+<div class="flex items-center justify-between font-label-code text-label-code text-on-surface-variant mt-1">
+<span>Custo por fatura:</span>
+<span class="font-label-numeric text-tertiary">R$ 0,25 / doc</span>
+</div>
+</div>
+<ul class="space-y-space-sm font-body-sm text-body-sm text-on-surface">
+<li class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check</span>
+<span>Extração em lote via Dropzone</span>
+</li>
+<li class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check</span>
+<span>Webhooks instantâneos configuráveis</span>
+</li>
+<li class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check</span>
+<span>Auditoria lado a lado com OCR visual</span>
+</li>
+<li class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check</span>
+<span>Histórico de faturas permanente</span>
+</li>
+</ul>
+</div>
+<div class="pt-space-lg">
+<a class="w-full inline-flex items-center justify-center py-space-sm px-space-md rounded-lg bg-gradient-to-r from-primary-container to-secondary-container text-on-primary-container font-headline-md text-body-md font-semibold shadow-lg hover:brightness-110 transition-all" href="#">
+                Comprar 1.500 Créditos
+              </a>
+</div>
+</div>
+<!-- Scale -->
+<div class="bg-surface-container rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-badge-caps text-badge-caps text-on-surface-variant uppercase tracking-wider font-semibold">Plano Scale</span>
+<span class="px-space-sm py-0.5 rounded bg-surface-container-high font-label-code text-label-code text-on-surface">Alto Volume</span>
+</div>
+<div class="flex items-baseline gap-1 my-space-md">
+<span class="font-label-numeric text-headline-md font-normal text-on-surface-variant">R$</span>
+<span class="font-label-numeric text-display-xl font-semibold text-on-surface">990</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/recarga</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+                Arquitetura de processamento em massa para finops corporativo, BPOs e marketplaces de grande porte.
+              </p>
+<div class="p-space-sm bg-surface-container-low rounded-lg mb-space-md">
+<div class="flex items-center justify-between font-label-code text-label-code text-on-surface">
+<span>Volume:</span>
+<span class="font-bold text-tertiary">5.000 créditos</span>
+</div>
+<div class="flex items-center justify-between font-label-code text-label-code text-on-surface-variant mt-1">
+<span>Custo por fatura:</span>
+<span class="font-label-numeric text-tertiary font-bold">R$ 0,19 / doc</span>
+</div>
+</div>
+<ul class="space-y-space-sm font-body-sm text-body-sm text-on-surface">
+<li class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check</span>
+<span>Fila de alta prioridade dedicada</span>
+</li>
+<li class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check</span>
+<span>SLA garantido de 99.98% de disponibilidade</span>
+</li>
+<li class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check</span>
+<span>Suporte prioritário via canal Slack/WhatsApp</span>
+</li>
+<li class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">check</span>
+<span>Customização de regras fiscais específicas</span>
+</li>
+</ul>
+</div>
+<div class="pt-space-lg">
+<a class="w-full inline-flex items-center justify-center py-space-sm px-space-md rounded-lg bg-surface-container-high text-on-surface font-headline-md text-body-md font-semibold hover:bg-surface-bright transition-colors" href="#">
+                Comprar 5.000 Créditos
+              </a>
+</div>
+</div>
+</div>
+<!-- Guarantee Note -->
+<div class="mt-space-lg p-space-md rounded-xl bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[28px]">savings</span>
+<p class="font-body-sm text-body-sm text-on-surface">
+<strong class="font-semibold text-on-surface">Garantia de saldo acumulativo:</strong> Os créditos recarregados não expiram ao fim do mês fiscal. O saldo residual permanece ativo para sempre.
+            </p>
+</div>
+<div class="flex items-center gap-space-xs font-label-code text-label-code text-on-surface-variant">
+<span>PIX Instantâneo</span>
+<span>•</span>
+<span>Cartão de Crédito</span>
+<span>•</span>
+<span>Faturamento Boleto (PJ)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. FAQ INTERATIVO & ACERVO TÉCNICO -->
+<section class="relative w-full px-gutter lg:px-gutter-lg py-space-xl max-w-5xl mx-auto">
+<div class="text-center mb-space-lg space-y-space-xs">
+<span class="font-badge-caps text-badge-caps text-primary uppercase tracking-widest font-semibold">Tire suas Dúvidas</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">
+          Perguntas Frequentes
+        </h2>
+</div>
+<div class="space-y-space-sm" id="faq-accordion">
+<!-- Question 1 -->
+<div class="bg-surface-container rounded-xl overflow-hidden transition-all">
+<button class="w-full p-space-md text-left flex items-center justify-between gap-space-sm text-on-surface hover:text-primary transition-colors" onclick="toggleFaq(this)">
+<span class="font-title-sm text-body-lg font-semibold">Como a segurança dos dados e o sigilo fiscal são garantidos perante a LGPD?</span>
+<span class="material-symbols-outlined transition-transform duration-200">expand_more</span>
+</button>
+<div class="hidden px-space-md pb-space-md text-on-surface-variant font-body-md text-body-md space-y-2">
+<p>Todas as faturas trafegam sob criptografia TLS 1.3 de ponta a ponta e são armazenadas em repouso com padrão militar AES-256 em data centers soberanos no Brasil (AWS São Paulo). Não utilizamos dados de faturas dos clientes para re-treinar modelos de IA públicos. Cumprimos integralmente a LGPD e os protocolos SOC 2 Type II.</p>
+</div>
+</div>
+<!-- Question 2 -->
+<div class="bg-surface-container rounded-xl overflow-hidden transition-all">
+<button class="w-full p-space-md text-left flex items-center justify-between gap-space-sm text-on-surface hover:text-primary transition-colors" onclick="toggleFaq(this)">
+<span class="font-title-sm text-body-lg font-semibold">Quais extensões e formatos de arquivo posso enviar para processamento?</span>
+<span class="material-symbols-outlined transition-transform duration-200">expand_more</span>
+</button>
+<div class="hidden px-space-md pb-space-md text-on-surface-variant font-body-md text-body-md space-y-2">
+<p>O FacturaFlow aceita arquivos digitais nativos e escaneados nos formatos: <strong>PDF (pesquisável ou rasterizado)</strong>, <strong>TIFF multipágina</strong>, <strong>PNG</strong>, <strong>JPEG</strong> e XMLs de NFe/CTe. Nossos algoritmos aplicam desinclinação e pré-processamento de ruído automaticamente antes da extração.</p>
+</div>
+</div>
+<!-- Question 3 -->
+<div class="bg-surface-container rounded-xl overflow-hidden transition-all">
+<button class="w-full p-space-md text-left flex items-center justify-between gap-space-sm text-on-surface hover:text-primary transition-colors" onclick="toggleFaq(this)">
+<span class="font-title-sm text-body-lg font-semibold">Qual é a latência da API para processamento síncrono e em lote?</span>
+<span class="material-symbols-outlined transition-transform duration-200">expand_more</span>
+</button>
+<div class="hidden px-space-md pb-space-md text-on-surface-variant font-body-md text-body-md space-y-2">
+<p>Para arquivos de até 3 páginas, a extração síncrona tem latência média de 420ms (com p99 abaixo de 1.1s). Para lotes contendo centenas de arquivos enviados simultaneamente, os lotes são despachados para filas paralelas e os resultados são entregues de modo assíncrono via Webhooks.</p>
+</div>
+</div>
+<!-- Question 4 -->
+<div class="bg-surface-container rounded-xl overflow-hidden transition-all">
+<button class="w-full p-space-md text-left flex items-center justify-between gap-space-sm text-on-surface hover:text-primary transition-colors" onclick="toggleFaq(this)">
+<span class="font-title-sm text-body-lg font-semibold">Os créditos adquiridos possuem data de validade?</span>
+<span class="material-symbols-outlined transition-transform duration-200">expand_more</span>
+</button>
+<div class="hidden px-space-md pb-space-md text-on-surface-variant font-body-md text-body-md space-y-2">
+<p>Não. Ao contrário de modelos tradicionais SaaS que cobram anuidades ou mensalidades 'use ou perca', os créditos do FacturaFlow são perenes. Seu saldo permanece ativo e acumulativo mesmo que você passe semanas sem submeter novas faturas.</p>
+</div>
+</div>
+</div>
+<!-- LIVE SYSTEM STATUS BAR (Technical Badge) -->
+<div class="mt-space-xl p-space-md rounded-xl bg-surface-container-low flex flex-col md:flex-row items-center justify-between gap-space-md shadow-sm">
+<div class="flex items-center gap-space-sm">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-tertiary"></span>
+</span>
+<div class="space-y-0.5">
+<p class="font-headline-md text-body-sm text-on-surface font-semibold">Todos os sistemas operacionais</p>
+<p class="font-label-code text-label-code text-on-surface-variant">Uptime verificado nos últimos 90 dias: 99.98%</p>
+</div>
+</div>
+<div class="flex items-center gap-space-md font-label-code text-label-code">
+<a class="text-on-surface hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[16px]">menu_book</span>
+<span>Docs da API</span>
+</a>
+<a class="text-on-surface hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[16px]">monitoring</span>
+<span>Status Page</span>
+</a>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- CLIENT SCRIPTS FOR INTERACTIVITY -->
+<script>
+  // Tabs switching for code snippet
+  function switchTab(lang) {
+    const tabs = ['ts', 'py', 'curl'];
+    tabs.forEach(t => {
+      const codeEl = document.getElementById('code-' + t);
+      const btnEl = document.getElementById('tab-btn-' + t);
+      if (t === lang) {
+        codeEl.classList.remove('hidden');
+        btnEl.classList.add('bg-surface-container', 'text-primary', 'font-semibold');
+        btnEl.classList.remove('text-on-surface-variant');
+      } else {
+        codeEl.classList.add('hidden');
+        btnEl.classList.remove('bg-surface-container', 'text-primary', 'font-semibold');
+        btnEl.classList.add('text-on-surface-variant');
+      }
+    });
+  }
+
+  // Copy code helper
+  function copyCurrentCode() {
+    const activeCode = document.querySelector('pre:not(.hidden) code');
+    if (activeCode) {
+      navigator.clipboard.writeText(activeCode.innerText);
+      const label = document.getElementById('copy-feedback-label');
+      label.innerText = 'Copiado!';
+      setTimeout(() => {
+        label.innerText = 'Copiar';
+      }, 2000);
+    }
+  }
+
+  // FAQ Accordion Toggle
+  function toggleFaq(button) {
+    const content = button.nextElementSibling;
+    const icon = button.querySelector('.material-symbols-outlined');
+    const isHidden = content.classList.contains('hidden');
+
+    // Close all FAQs first
+    document.querySelectorAll('#faq-accordion > div > div').forEach(div => div.classList.add('hidden'));
+    document.querySelectorAll('#faq-accordion button .material-symbols-outlined').forEach(i => i.style.transform = 'rotate(0deg)');
+
+    if (isHidden) {
+      content.classList.remove('hidden');
+      icon.style.transform = 'rotate(180deg)';
+    } else {
+      content.classList.add('hidden');
+      icon.style.transform = 'rotate(0deg)';
+    }
+  }
+</script></main><footer class="w-full bg-surface-container-lowest shadow-[0_-1px_12px_rgba(0,0,0,0.35)]"><div class="w-full px-gutter lg:px-gutter-lg py-space-xl"><div class="grid grid-cols-1 md:grid-cols-4 gap-gutter-lg pb-space-lg"><div class="space-y-space-sm"><div class="flex items-center gap-space-xs"><img alt="FacturaFlow Brand Logo" class="h-6 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Vxsx6oqi2z0DmzB7_zh0SRp5hFAlGD0Ob1ovbChmcqdMOHq_Vo-A1TPCJ_DqU_G1XQmEbE6pNZwqnmp8i-CF3o0OI_xn0_68ApHuloOaMD6M5s5SoF22JAxIO3bJBjFdXsNrAa28Z-RZqEEsRtXRt9MY9q63GKFBWAaoJ1D313bV_zWQXSUK-1PGD_INSZQ6__cvBpZyoMim25ft3TXol-QP1zMD8vaCzJsNBhLPyXNg"/><span class="font-headline-md text-title-sm text-on-surface font-semibold">Factura<span class="text-primary">Flow</span></span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Motor de inteligência artificial soberano para extração, validação fiscal e reconciliação instantânea de faturas.</p><div class="flex items-center gap-space-xs pt-space-xs"><span class="inline-block w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></span><span class="font-label-code text-label-code text-tertiary">API v2.4 Operational (99.98%)</span></div></div><div><div class="font-badge-caps text-badge-caps uppercase tracking-wider text-on-surface-variant mb-space-sm font-semibold">Plataforma</div><ul class="space-y-space-xs font-body-sm text-body-sm"><li data-path="dashboard"><a class="text-on-surface-variant hover:text-on-surface transition-colors" data-path="dashboard" href="#">Painel de Controle</a></li><li data-path="nova-extracao"><a class="text-on-surface-variant hover:text-on-surface transition-colors" data-path="nova-extracao" href="#">Processamento em Lote</a></li><li data-path="historico"><a class="text-on-surface-variant hover:text-on-surface transition-colors" data-path="historico" href="#">Auditoria e Logs</a></li><li data-path="creditos"><a class="text-on-surface-variant hover:text-on-surface transition-colors" data-path="creditos" href="#">Planos e Faturamento</a></li></ul></div><div><div class="font-badge-caps text-badge-caps uppercase tracking-wider text-on-surface-variant mb-space-sm font-semibold">Desenvolvedores</div><ul class="space-y-space-xs font-body-sm text-body-sm"><li data-path="api-docs"><a class="text-on-surface-variant hover:text-on-surface transition-colors" data-path="api-docs" href="#">Documentação REST &amp; gRPC</a></li><li><a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Webhooks &amp; Eventos</a></li><li><a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">SDKs (Python, Node, Go)</a></li><li><a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Status da Infraestrutura</a></li></ul></div><div><div class="font-badge-caps text-badge-caps uppercase tracking-wider text-on-surface-variant mb-space-sm font-semibold">Conformidade &amp; Suporte</div><ul class="space-y-space-xs font-body-sm text-body-sm"><li><a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Segurança LGPD &amp; SOC 2</a></li><li><a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Termos de Serviço</a></li><li><a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Política de Privacidade</a></li><li><a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Central de Ajuda</a></li></ul></div></div><div class="pt-space-md flex flex-col sm:flex-row items-center justify-between gap-space-sm font-body-sm text-body-sm text-on-surface-variant"><p>© 2025 FacturaFlow Inc. Todos os direitos reservados. Alta precisão com OCR Neural e LLMs fiscais.</p><div class="flex items-center gap-space-md font-label-code text-label-code"><span>LATÊNCIA MÉDIA: 420ms</span><span>TAXA DE ACERTO: 99.4%</span></div></div></div></footer></body></html>

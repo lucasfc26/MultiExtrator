@@ -1,0 +1,116 @@
+# Fatturas — ambiente de DESENVOLVIMENTO
+#
+#   docker compose -f docker-compose.dev.yml up -d --build
+#
+#   Frontend ........ http://localhost:5173
+#   API ............. http://localhost:3000/api/v1   (Swagger: /api/v1/docs)
+#   E-mails (Mailpit) http://localhost:8025
+#   PostgreSQL ...... localhost:5432  (fatturas / fatturas)
+#   Worker .......... http://localhost:8000/docs
+#
+# Código montado por volume: alterações em backend/ e web/ recarregam sozinhas.
+# As chaves dos captchas (CAPSOLVER_API_KEY, NONECAP_API_KEY) vêm do .env da raiz.
+
+name: fatturas-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fatturas
+      POSTGRES_PASSWORD: fatturas
+      POSTGRES_DB: fatturas
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fatturas -d fatturas"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      APP_URL: http://localhost:5173
+      CORS_ORIGINS: http://localhost:5173
+      DATABASE_URL: postgresql://fatturas:fatturas@postgres:5432/fatturas?schema=public
+      JWT_ACCESS_SECRET: dev-access-secret-troque-por-um-valor-aleatorio-longo
+      DOWNLOAD_URL_SECRET: dev-download-secret-troque-por-um-valor-aleatorio-longo
+      PAYMENT_WEBHOOK_SECRET: dev-webhook-secret-troque
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      WORKER_URL: http://worker:8000
+      STORAGE_DIR: /app/storage
+      # Hot reload em volume montado (Windows/macOS): observa por polling.
+      TSC_WATCHFILE: DynamicPriorityPolling
+      TSC_WATCHDIRECTORY: DynamicPriorityPolling
+    volumes:
+      - ./backend:/app
+      - api_node_modules:/app/node_modules
+      - api_storage:/app/storage
+
+  worker:
+    build: ./worker
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MAX_JOBS_SIMULTANEOS: ${MAX_JOBS_SIMULTANEOS:-1}
+      JOB_TIMEOUT_S: ${JOB_TIMEOUT_S:-1200}
+      OTP_TIMEOUT_S: ${OTP_TIMEOUT_S:-600}
+      EXTRACTION_TIMEZONE: America/Fortaleza
+      TZ: America/Fortaleza
+    shm_size: 1gb
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - worker_jobs:/app/jobs
+
+  web:
+    image: node:22-bookworm-slim
+    working_dir: /app
+    command: sh -c "npm install -g npm@11 --no-audit --no-fund && npm ci --no-audit --no-fund && npm run dev -- --host 0.0.0.0 --port 5173"
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:5173:5173"
+    environment:
+      # Painel usando a API real (sem dados demonstrativos).
+      VITE_USE_MOCKS: "false"
+      VITE_ENGINE: platform
+      VITE_API_BASE_URL: /api/v1
+      BACKEND_URL: http://api:3000
+      WORKER_URL: http://worker:8000
+      VITE_POLLING: "true"
+    volumes:
+      - ./web:/app
+      - web_node_modules:/app/node_modules
+
+volumes:
+  pg_data:
+  api_node_modules:
+  api_storage:
+  worker_jobs:
+  web_node_modules:

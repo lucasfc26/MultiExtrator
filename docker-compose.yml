@@ -1,0 +1,50 @@
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-2.45.5}
+    restart: unless-stopped
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    environment:
+      # URL pública do n8n: entra nas URLs /webhook/... e na url_codigo da 2 VIA.
+      N8N_WEBHOOK_URL: ${N8N_URL:-http://localhost:5678/}
+      N8N_EDITOR_BASE_URL: ${N8N_URL:-http://localhost:5678/}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?defina N8N_ENCRYPTION_KEY no .env}
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-false}
+      GENERIC_TIMEZONE: America/Fortaleza
+      TZ: America/Fortaleza
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      # Execuções só com erro ficam salvas: as de sucesso carregam o PDF em base64.
+      EXECUTIONS_DATA_SAVE_ON_SUCCESS: none
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: "168"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - worker
+
+  worker:
+    build: ./worker
+    restart: unless-stopped
+    # Sem porta publicada: só o n8n (rede interna do compose) chama o worker.
+    # Para depurar direto: descomente e use http://localhost:8000/docs
+    # ports:
+    #   - "127.0.0.1:8000:8000"
+    environment:
+      CAPSOLVER_API_KEY: ${CAPSOLVER_API_KEY:-}
+      NONECAP_API_KEY: ${NONECAP_API_KEY:-}
+      SEGUNDA_VIA_PROXY: ${SEGUNDA_VIA_PROXY:-}
+      NAVEGADOR_SITE_ENEL: ${NAVEGADOR_SITE_ENEL:-camoufox}
+      NAVEGADOR_CORPORATIVO: ${NAVEGADOR_CORPORATIVO:-camoufox}
+      MAX_JOBS_SIMULTANEOS: ${MAX_JOBS_SIMULTANEOS:-1}
+      JOB_TIMEOUT_S: ${JOB_TIMEOUT_S:-1200}
+      OTP_TIMEOUT_S: ${OTP_TIMEOUT_S:-600}
+      EXTRACTION_TIMEZONE: America/Fortaleza
+      TZ: America/Fortaleza
+    # Chrome usa /dev/shm; o padrão de 64MB derruba abas.
+    shm_size: 1gb
+    volumes:
+      - worker_jobs:/app/jobs
+
+volumes:
+  n8n_data:
+  worker_jobs:

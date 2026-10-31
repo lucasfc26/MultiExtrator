@@ -1,0 +1,426 @@
+{
+  "name": "MultiExtractor — 2 VIA ENEL",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 2 VIA ENEL (acesso rápido)\n\nhCaptcha pelo **NoneCap** (chave no worker) → UC + CPF/CNPJ → a ENEL envia um código de segurança ao cliente → PDF.\n\n**1.** POST `/webhook/enel/segunda-via`\n```json\n{\n  \"uc\": \"12345678\",\n  \"cpf_cnpj\": \"12345678000199\",\n  \"referencia\": \"07/2026\",\n  \"email_segunda_via\": \"financeiro@cliente.com.br\",\n  \"canal\": \"email\"\n}\n```\nResposta **202** `status: aguardando_codigo` com `url_codigo`.\n\n**2.** POST na `url_codigo` (mesmo header) em até **10 min**:\n`{\"codigo\": \"123456\"}` — ou `{\"reenviar\": true}` se não chegou.\nResposta: o resultado final (`sucesso` | `atencao` | `erro` + PDF) ou outro 202 se a ENEL recusar o código.\n\nSem código em 10 min, a extração é cancelada.",
+        "height": 640,
+        "width": 620
+      },
+      "id": "622315f9-dda7-5809-abff-982b2eccbad8",
+      "name": "Como usar",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "enel/segunda-via",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "09863f1a-67b2-5a42-9763-fb6dcdb30bb2",
+      "name": "Receber pedido",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ],
+      "webhookId": "72c76edb-185f-5d54-98df-03bec9b50eee",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "multiextractor-api-key",
+          "name": "MultiExtractor API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://worker:8000/extracoes/segunda-via",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 1800000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}"
+      },
+      "id": "e0b85896-f189-5fba-a3bc-dc4fe59098b5",
+      "name": "Iniciar no worker",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        200
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c0768ffe-33f9-5d9b-85a1-dfab909f199f",
+              "leftValue": "={{ $json.body?.estado }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "aguardando_codigo"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bc02a5d3-1f13-5c7a-9068-d14346599f1d",
+      "name": "Pediu código?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ...$json.body, url_codigo: $execution.resumeUrl, como_enviar: 'POST url_codigo com {\"codigo\": \"123456\"} (ou {\"reenviar\": true} se o código não chegou), com o mesmo header de autenticação' }) }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "197c9028-2e75-5f52-806e-f6b1d003c106",
+      "name": "Pedir código",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        680,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "incomingAuthentication": "headerAuth",
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "limitWaitTime": true,
+        "limitType": "afterTimeInterval",
+        "resumeAmount": 10,
+        "resumeUnit": "minutes",
+        "options": {}
+      },
+      "id": "7e057b6e-3d64-513f-9f45-32e5ff78158f",
+      "name": "Esperar código",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        900,
+        60
+      ],
+      "webhookId": "e8c14e46-9d8e-5cf7-a825-75e68f440ac2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "multiextractor-api-key",
+          "name": "MultiExtractor API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "d2148a51-0b65-5228-afc1-15173f70f918",
+              "leftValue": "={{ $json.statusCode === undefined }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f73a2009-e839-54ce-b638-d0fff66e5d5c",
+      "name": "Código chegou?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://worker:8000/extracoes/{{ $('Iniciar no worker').first().json.body.job_id }}/codigo",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 1800000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ codigo: $json.body?.codigo != null ? String($json.body.codigo) : null, reenviar: $json.body?.reenviar === true }) }}"
+      },
+      "id": "4f182a15-a42d-5794-b021-af66311fc25b",
+      "name": "Enviar código",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        -40
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "9fa06de7-09b8-544c-8b00-5abaa6726bcb",
+              "leftValue": "={{ $json.body?.estado }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "aguardando_codigo"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b211679d-f97c-50ac-9a13-3fb070d084a8",
+      "name": "Pediu outro código?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ...$json.body, url_codigo: $execution.resumeUrl, como_enviar: 'POST url_codigo com {\"codigo\": \"123456\"} (ou {\"reenviar\": true} se o código não chegou), com o mesmo header de autenticação' }) }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "9288c7e8-8984-53aa-8b48-96ff2980a669",
+      "name": "Pedir novo código",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1780,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=http://worker:8000/extracoes/{{ $('Iniciar no worker').first().json.body.job_id }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 1800000
+        }
+      },
+      "id": "26694189-fbd7-5697-b33e-cd03cc312fab",
+      "name": "Cancelar no worker",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        200
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.body ?? { status: 'erro', observacao: 'Worker indisponível: ' + ($json.error?.message ?? 'sem resposta') }) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode ?? 502 }}"
+        }
+      },
+      "id": "1f590e77-3a8c-512f-81fb-8f785f65ac35",
+      "name": "Responder resultado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1780,
+        340
+      ]
+    }
+  ],
+  "connections": {
+    "Receber pedido": {
+      "main": [
+        [
+          {
+            "node": "Iniciar no worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iniciar no worker": {
+      "main": [
+        [
+          {
+            "node": "Pediu código?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pediu código?": {
+      "main": [
+        [
+          {
+            "node": "Pedir código",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedir código": {
+      "main": [
+        [
+          {
+            "node": "Esperar código",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar código": {
+      "main": [
+        [
+          {
+            "node": "Código chegou?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Código chegou?": {
+      "main": [
+        [
+          {
+            "node": "Enviar código",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Cancelar no worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar código": {
+      "main": [
+        [
+          {
+            "node": "Pediu outro código?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pediu outro código?": {
+      "main": [
+        [
+          {
+            "node": "Pedir novo código",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedir novo código": {
+      "main": [
+        [
+          {
+            "node": "Esperar código",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Fortaleza"
+  },
+  "pinData": {},
+  "tags": []
+}

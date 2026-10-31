@@ -1,0 +1,119 @@
+{
+  "name": "MultiExtractor — Corporativo",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Corporativo\n\nAgência Virtual (Corporativo), sem captcha: login → troca para a UC do agrupamento → Segunda Via → PDF. `referencia` opcional (padrão: mês atual).\n\n**POST** `/webhook/enel/corporativo`  \nHeader: a chave da credencial *MultiExtractor API Key*\n\n```json\n{\n  \"usuario\": \"login@empresa.com\",\n  \"senha\": \"senha\",\n  \"uc\": \"12345678\",\n  \"referencia\": \"07/2026\"\n}\n```\n\nResposta: `status` = `sucesso` | `atencao` | `erro`, `observacao` e `arquivos[]` com `pdf_base64` de cada fatura.",
+        "height": 520,
+        "width": 560
+      },
+      "id": "206aacc6-5b7d-5c56-9f29-2af58f3b212c",
+      "name": "Como usar",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "enel/corporativo",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c86a1a5a-c75f-5e48-be1a-ac9822002f64",
+      "name": "Receber pedido",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        160
+      ],
+      "webhookId": "cef93544-6ff3-5d74-bd80-df1711833ce2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "multiextractor-api-key",
+          "name": "MultiExtractor API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://worker:8000/extracoes/corporativo",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 1800000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}"
+      },
+      "id": "58aebeea-9684-51fb-95d0-7079cb801285",
+      "name": "Extrair no worker",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        160
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.body ?? { status: 'erro', observacao: 'Worker indisponível: ' + ($json.error?.message ?? 'sem resposta') }) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode ?? 502 }}"
+        }
+      },
+      "id": "e6a80e8b-4448-551e-9879-3a6345659207",
+      "name": "Responder resultado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        160
+      ]
+    }
+  ],
+  "connections": {
+    "Receber pedido": {
+      "main": [
+        [
+          {
+            "node": "Extrair no worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair no worker": {
+      "main": [
+        [
+          {
+            "node": "Responder resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Fortaleza"
+  },
+  "pinData": {},
+  "tags": []
+}

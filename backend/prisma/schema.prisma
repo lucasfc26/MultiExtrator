@@ -1,0 +1,461 @@
+// Fatturas — modelo de dados (PostgreSQL)
+// Decisões de modelagem: backend/docs/arquitetura.md
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Usuários e autenticação ────────────────────────────────────────────────
+
+model User {
+  id                  String    @id @default(uuid()) @db.Uuid
+  name                String
+  /// Sempre em minúsculas (normalizado no serviço).
+  email               String    @unique
+  passwordHash        String
+  emailVerifiedAt     DateTime?
+  avatarUrl           String?
+  lastLoginAt         DateTime?
+  deletionRequestedAt DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  settings      UserSettings?
+  creditAccount CreditAccount?
+  sessions      Session[]
+  tokens        VerificationToken[]
+  transactions  CreditTransaction[]
+  reservations  CreditReservation[]
+  orders        PaymentOrder[]
+  apiKeys       ApiKey[]
+  invoices      InvoiceRequest[]
+  extractions   Extraction[]
+  artifacts     Artifact[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+}
+
+/// Refresh tokens rotativos (um registro por emissão; a família detecta reuso).
+model Session {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  tokenHash    String    @unique
+  familyId     String    @db.Uuid
+  userAgent    String?
+  ip           String?
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?   @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+enum TokenPurpose {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
+
+model VerificationToken {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @db.Uuid
+  purpose   TokenPurpose
+  tokenHash String       @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+}
+
+enum OutputFormat {
+  JSON
+  CSV
+}
+
+model UserSettings {
+  userId          String       @id @db.Uuid
+  defaultOutput   OutputFormat @default(JSON)
+  emailExtraction Boolean      @default(true)
+  emailCredits    Boolean      @default(true)
+  emailSecurity   Boolean      @default(true)
+  inAppExtraction Boolean      @default(true)
+  updatedAt       DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Créditos (ledger imutável + projeção do saldo) ─────────────────────────
+
+/// Projeção do saldo. Só é alterada junto com uma linha do ledger, na mesma transação.
+model CreditAccount {
+  userId    String   @id @db.Uuid
+  available Int      @default(0)
+  reserved  Int      @default(0)
+  purchased Int      @default(0)
+  consumed  Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum CreditTxType {
+  PURCHASE
+  CONSUMPTION
+  RESERVATION
+  RELEASE
+  REFUND
+  ADJUSTMENT
+}
+
+enum CreditTxStatus {
+  CONFIRMED
+  PENDING
+  FAILED
+  REVERSED
+}
+
+model CreditTransaction {
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String         @db.Uuid
+  type           CreditTxType
+  /// Positivo entra no saldo disponível; negativo sai.
+  credits        Int
+  amountCents    Int?
+  status         CreditTxStatus @default(CONFIRMED)
+  description    String
+  reference      String
+  /// Garante que o mesmo evento não gere duas movimentações (retries, webhooks repetidos).
+  idempotencyKey String?        @unique
+  invoiceId      String?        @db.Uuid
+  extractionId   String?        @db.Uuid
+  paymentOrderId String?        @db.Uuid
+  createdAt      DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, type])
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CONSUMED
+  RELEASED
+}
+
+model CreditReservation {
+  id           String            @id @default(uuid()) @db.Uuid
+  userId       String            @db.Uuid
+  credits      Int
+  status       ReservationStatus @default(ACTIVE)
+  invoiceId    String?           @unique @db.Uuid
+  extractionId String?           @unique @db.Uuid
+  createdAt    DateTime          @default(now())
+  settledAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
+
+model CreditPackage {
+  id          String   @id
+  name        String
+  credits     Int
+  priceCents  Int
+  benefits    String[]
+  highlighted Boolean  @default(false)
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+}
+
+// ─── Pagamentos ─────────────────────────────────────────────────────────────
+
+enum PaymentMethod {
+  PIX
+  CARD
+  BOLETO
+}
+
+enum PaymentState {
+  AWAITING_PAYMENT
+  PROCESSING
+  CONFIRMED
+  DECLINED
+  EXPIRED
+  REFUNDED
+}
+
+model PaymentOrder {
+  id           String        @id @default(uuid()) @db.Uuid
+  userId       String        @db.Uuid
+  packageId    String
+  credits      Int
+  amountCents  Int
+  method       PaymentMethod
+  state        PaymentState  @default(AWAITING_PAYMENT)
+  provider     String
+  providerRef  String?
+  pixCopyPaste String?
+  pixQrImage   String?
+  checkoutUrl  String?
+  boletoUrl    String?
+  expiresAt    DateTime?
+  confirmedAt  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerRef])
+  @@index([userId, createdAt])
+}
+
+/// Webhooks recebidos do gateway: guardados antes de processar (idempotência e auditoria).
+model PaymentWebhookEvent {
+  id          String    @id @default(uuid()) @db.Uuid
+  provider    String
+  eventId     String
+  type        String
+  payload     Json
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+  error       String?
+
+  @@unique([provider, eventId])
+}
+
+// ─── API keys ───────────────────────────────────────────────────────────────
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+}
+
+model ApiKey {
+  id         String       @id @default(uuid()) @db.Uuid
+  userId     String       @db.Uuid
+  name       String
+  /// Parte pública (ex.: "ftt_live_7Hq2"), exibida na interface.
+  prefix     String       @unique
+  /// SHA-256 do segredo completo. O segredo nunca é guardado.
+  secretHash String       @unique
+  scopes     String[]
+  status     ApiKeyStatus @default(ACTIVE)
+  createdAt  DateTime     @default(now())
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── Nova fatura (busca na ENEL pelo worker) ────────────────────────────────
+
+enum InvoiceFlow {
+  SITE_ENEL
+  CORPORATIVO
+  SEGUNDA_VIA
+}
+
+enum RequestSource {
+  WEB
+  API
+}
+
+enum InvoiceState {
+  PENDING
+  QUEUED
+  RUNNING
+  AWAITING_CODE
+  COMPLETED
+}
+
+enum InvoiceStatus {
+  PROCESSING
+  AWAITING_CODE
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+model InvoiceRequest {
+  id              String        @id @default(uuid()) @db.Uuid
+  userId          String        @db.Uuid
+  flow            InvoiceFlow
+  uc              String?
+  referencias     String[]
+  /// Entrada sem segredos (login, CPF/CNPJ mascarado...). A senha nunca é persistida.
+  inputSummary    Json
+  state           InvoiceState  @default(PENDING)
+  status          InvoiceStatus @default(PROCESSING)
+  observation     String        @default("")
+  engineJobId     String?       @unique
+  codeExpiresAt   DateTime?
+  durationS       Float?
+  creditsReserved Int           @default(0)
+  creditsCharged  Int?
+  source          RequestSource @default(WEB)
+  apiKeyId        String?       @db.Uuid
+  idempotencyKey  String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  completedAt     DateTime?
+
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events    InvoiceEvent[]
+  artifacts Artifact[]
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId, createdAt])
+  @@index([state])
+}
+
+model InvoiceEvent {
+  id        String         @id @default(uuid()) @db.Uuid
+  invoiceId String         @db.Uuid
+  state     String
+  status    InvoiceStatus?
+  message   String
+  createdAt DateTime       @default(now())
+
+  invoice InvoiceRequest @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId, createdAt])
+}
+
+// ─── Extrator (conversor de faturas enviadas) ───────────────────────────────
+
+enum ExtractionStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Extraction {
+  id              String           @id @default(uuid()) @db.Uuid
+  userId          String           @db.Uuid
+  fileName        String
+  mimeType        String
+  sizeBytes       Int
+  status          ExtractionStatus @default(QUEUED)
+  error           String?
+  durationS       Float?
+  data            Json?
+  fields          Json?
+  creditsReserved Int              @default(0)
+  creditsCharged  Int?
+  source          RequestSource    @default(WEB)
+  apiKeyId        String?          @db.Uuid
+  createdAt       DateTime         @default(now())
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artifacts Artifact[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+// ─── Arquivos (retenção de 30 dias) ─────────────────────────────────────────
+
+enum ArtifactKind {
+  INVOICE_PDF
+  ORIGINAL_UPLOAD
+}
+
+model Artifact {
+  id           String       @id @default(uuid()) @db.Uuid
+  userId       String       @db.Uuid
+  invoiceId    String?      @db.Uuid
+  extractionId String?      @db.Uuid
+  kind         ArtifactKind
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  /// Chave interna gerada pelo sistema (nunca o nome enviado pelo usuário).
+  storageKey   String       @unique
+  referencia   String?
+  createdAt    DateTime     @default(now())
+  expiresAt    DateTime
+  deletedAt    DateTime?
+
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoice    InvoiceRequest? @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  extraction Extraction?     @relation(fields: [extractionId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt, deletedAt])
+  @@index([invoiceId])
+  @@index([extractionId])
+}
+
+// ─── Notificações, auditoria e contato ──────────────────────────────────────
+
+enum NotificationType {
+  EXTRACTION_COMPLETED
+  EXTRACTION_FAILED
+  CREDITS_LOW
+  PURCHASE_CONFIRMED
+  PAYMENT_PENDING
+  PAYMENT_DECLINED
+  FILES_EXPIRING
+  SECURITY
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @db.Uuid
+  action    String
+  entity    String?
+  entityId  String?
+  meta      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
+
+model ContactRequest {
+  id        String   @id @default(uuid()) @db.Uuid
+  protocol  String   @unique
+  name      String
+  email     String
+  company   String
+  phone     String?
+  volume    String
+  message   String
+  createdAt DateTime @default(now())
+}
