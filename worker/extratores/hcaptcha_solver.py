@@ -35,11 +35,16 @@ AUDIO_SUBMIT = "#audio-submit"
 RELOAD_BUTTON = 'button[aria-label="Get a new challenge"]'
 MAX_AUDIO_ATTEMPTS = 3
 
-# Mesma chave pública usada pelo Buster / TRAWL (demos de acessibilidade do Google).
+# Google Speech API v2 (fallback quando STT_URL não está definido).
+# Defina GOOGLE_STT_API_KEY no ambiente — não versionar a chave.
+_GOOGLE_STT_KEY = os.environ.get("GOOGLE_STT_API_KEY", "").strip()
 GOOGLE_STT = (
-    "https://www.google.com/speech-api/v2/recognize"
-    "?output=json&lang=en-US"
-    "&key=AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw"
+    (
+        "https://www.google.com/speech-api/v2/recognize"
+        f"?output=json&lang=en-US&key={_GOOGLE_STT_KEY}"
+    )
+    if _GOOGLE_STT_KEY
+    else ""
 )
 FFMPEG = os.environ.get("FFMPEG_PATH", "ffmpeg")
 STT_URL = os.environ.get("STT_URL", "")
@@ -118,6 +123,9 @@ def _transcribe_whisper(audio_url: str, timeout: float = 30) -> str | None:
 
 
 def _transcribe_google(audio_url: str, timeout: float = 30) -> str | None:
+    if not GOOGLE_STT:
+        print("[stt] GOOGLE_STT_API_KEY not set; cannot use Google STT")
+        return None
     tmp = Path(tempfile.gettempdir())
     uid = uuid.uuid4().hex[:8]
     mp3 = tmp / f"trawl-{uid}.mp3"
